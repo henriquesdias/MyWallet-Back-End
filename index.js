@@ -27,6 +27,10 @@ const loginSchema = joi.object({
   email: joi.string().email().required().trim(),
   password: joi.string().required().trim(),
 });
+const transitionSchema = joi.object({
+  value: joi.number().required(),
+  description: joi.string().required().trim(),
+});
 server.post("/sign-up", async (req, res) => {
   const { user, email, password } = req.body;
   const validation = userSchema.validate(
@@ -73,7 +77,36 @@ server.post("/sign-in", async (req, res) => {
     }
     res.sendStatus(401);
   } catch (error) {
-    res.send(error.message);
+    res.status(500).send(error.message);
+  }
+});
+server.post("/transitions", async (req, res) => {
+  const { authorization } = req.headers;
+  const { value, description } = req.body;
+  const token = authorization?.replace("Bearer ", "");
+  if (!token) {
+    return res.sendStatus(401);
+  }
+  const validation = transitionSchema.validate(
+    {
+      value,
+      description,
+    },
+    { abortEarly: false }
+  );
+  if (validation.error) {
+    const errors = validation.error.details.map((e) => e.message);
+    return res.status(422).send(errors);
+  }
+  try {
+    const session = await db.collection("sessions").findOne({ token });
+    const user = await db.collection("users").findOne({ _id: session.userId });
+    const transition = await db
+      .collection("transitions")
+      .insertOne({ user: user._id, value, description });
+    res.status(201).send({ id: transition.insertedId, value, description });
+  } catch (error) {
+    res.status(500).send(error.message);
   }
 });
 server.listen(5000, () => console.log("Listening on port 5000"));
