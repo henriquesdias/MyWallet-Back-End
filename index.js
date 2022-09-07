@@ -30,6 +30,7 @@ const loginSchema = joi.object({
 const transitionSchema = joi.object({
   value: joi.number().required(),
   description: joi.string().required().trim(),
+  isOutput: joi.valid(true, false).required(),
 });
 server.post("/sign-up", async (req, res) => {
   const { user, email, password } = req.body;
@@ -82,7 +83,7 @@ server.post("/sign-in", async (req, res) => {
 });
 server.post("/transitions", async (req, res) => {
   const { authorization } = req.headers;
-  const { value, description } = req.body;
+  const { value, description, isOutput } = req.body;
   const token = authorization?.replace("Bearer ", "");
   if (!token) {
     return res.sendStatus(401);
@@ -91,6 +92,7 @@ server.post("/transitions", async (req, res) => {
     {
       value,
       description,
+      isOutput,
     },
     { abortEarly: false }
   );
@@ -100,13 +102,40 @@ server.post("/transitions", async (req, res) => {
   }
   try {
     const session = await db.collection("sessions").findOne({ token });
+    if (!session) {
+      return res.sendStatus(401);
+    }
     const user = await db.collection("users").findOne({ _id: session.userId });
     const transition = await db
       .collection("transitions")
-      .insertOne({ user: user._id, value, description });
-    res.status(201).send({ id: transition.insertedId, value, description });
+      .insertOne({ user: user._id, value, description, isOutput });
+    res
+      .status(201)
+      .send({ id: transition.insertedId, value, description, isOutput });
   } catch (error) {
     res.status(500).send(error.message);
+  }
+});
+server.get("/transitions", async (req, res) => {
+  const { authorization } = req.headers;
+  const token = authorization?.replace("Bearer ", "");
+  if (!token) {
+    return res.sendStatus(401);
+  }
+  try {
+    const session = await db.collection("sessions").findOne({ token });
+    if (!session) {
+      return res.sendStatus(401);
+    }
+    const user = await db.collection("users").findOne({ _id: session.userId });
+    const transitions = await db
+      .collection("transitions")
+      .find({ user: user._id })
+      .toArray();
+    console.log(user._id);
+    res.send(transitions);
+  } catch (error) {
+    res.status(500).send(error, message);
   }
 });
 server.listen(5000, () => console.log("Listening on port 5000"));
