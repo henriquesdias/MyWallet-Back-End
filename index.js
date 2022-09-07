@@ -10,7 +10,7 @@ dotenv.config();
 const server = express();
 server.use(express.json());
 server.use(cors());
-
+console.log(dayjs().format("DD/MM"));
 const mongoClient = new MongoClient(process.env.MONGO_URI);
 let db;
 
@@ -108,10 +108,22 @@ server.post("/transitions", async (req, res) => {
     const user = await db.collection("users").findOne({ _id: session.userId });
     const transition = await db
       .collection("transitions")
-      .insertOne({ user: user._id, value, description, isOutput });
+      .insertOne({
+        user: user._id,
+        value,
+        description,
+        isOutput,
+        date: dayjs().format("DD/MM"),
+      });
     res
       .status(201)
-      .send({ id: transition.insertedId, value, description, isOutput });
+      .send({
+        id: transition.insertedId,
+        value,
+        description,
+        isOutput,
+        date: dayjs().format("DD/MM"),
+      });
   } catch (error) {
     res.status(500).send(error.message);
   }
