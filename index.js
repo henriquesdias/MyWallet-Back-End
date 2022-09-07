@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import joi from "joi";
 import dayjs from "dayjs";
 import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
 dotenv.config();
 const server = express();
 server.use(express.json());
@@ -22,10 +23,12 @@ const userSchema = joi.object({
   email: joi.string().email().required().trim(),
   password: joi.string().required().trim(),
 });
-
+const loginSchema = joi.object({
+  email: joi.string().email().required().trim(),
+  password: joi.string().required().trim(),
+});
 server.post("/sign-up", async (req, res) => {
-  const { email, password } = req.body;
-  const { user } = req.headers;
+  const { user, email, password } = req.body;
   const validation = userSchema.validate(
     { name: user, email, password },
     { abortEarly: false }
@@ -48,5 +51,29 @@ server.post("/sign-up", async (req, res) => {
     res.status(500).send(error.message);
   }
 });
-
+server.post("/sign-in", async (req, res) => {
+  const { email, password } = req.body;
+  const validation = loginSchema.validate(
+    { email, password },
+    { abortEarly: false }
+  );
+  if (validation.error) {
+    const errors = validation.error.details.map((e) => e.message);
+    return res.status(422).send(errors);
+  }
+  try {
+    const user = await db.collection("users").findOne({ email });
+    if (user && bcrypt.compareSync(password, user.password)) {
+      const token = uuid();
+      await db.collection("sessions").insertOne({
+        userId: user._id,
+        token,
+      });
+      return res.status(200).send(token);
+    }
+    res.sendStatus(401);
+  } catch (error) {
+    res.send(error.message);
+  }
+});
 server.listen(5000, () => console.log("Listening on port 5000"));
