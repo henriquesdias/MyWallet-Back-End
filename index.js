@@ -4,6 +4,7 @@ import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
 import joi from "joi";
 import dayjs from "dayjs";
+import bcrypt from "bcrypt";
 dotenv.config();
 const server = express();
 server.use(express.json());
@@ -15,3 +16,37 @@ let db;
 mongoClient.connect().then(() => {
   db = mongoClient.db("MyWallet-API");
 });
+
+const userSchema = joi.object({
+  name: joi.string().required().trim(),
+  email: joi.string().email().required().trim(),
+  password: joi.string().required().trim(),
+});
+
+server.post("/sign-up", async (req, res) => {
+  const { email, password } = req.body;
+  const { user } = req.headers;
+  const validation = userSchema.validate(
+    { name: user, email, password },
+    { abortEarly: false }
+  );
+  if (validation.error) {
+    const errors = validation.error.details.map((e) => e.message);
+    return res.status(422).send(errors);
+  }
+  const passwordHash = bcrypt.hashSync(password, 10);
+  try {
+    const users = await db.collection("users").findOne({ email });
+    if (users) {
+      return res.sendStatus(409);
+    }
+    await db
+      .collection("users")
+      .insertOne({ name: user, email: email, password: passwordHash });
+    res.sendStatus(201);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+server.listen(5000, () => console.log("Listening on port 5000"));
