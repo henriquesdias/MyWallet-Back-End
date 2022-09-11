@@ -1,6 +1,7 @@
 import db from "../database/mongo.js";
 import dayjs from "dayjs";
 import joi from "joi";
+import { ObjectId } from "mongodb";
 const registrySchema = joi.object({
   value: joi.number().required(),
   description: joi.string().required().trim(),
@@ -8,8 +9,8 @@ const registrySchema = joi.object({
 });
 
 async function createRegistry(req, res) {
-  const { value, description, isOutput } = req.body;
   const token = res.locals.token;
+  const { value, description, isOutput } = req.body;
   const validation = registrySchema.validate(
     {
       value,
@@ -63,4 +64,21 @@ async function getRegistries(req, res) {
     res.status(500).send(error, message);
   }
 }
-export { createRegistry, getRegistries };
+async function deleteRegistry(req, res) {
+  const idRegistry = req.params.idRegistry;
+  try {
+    const registry = await db
+      .collection("registries")
+      .findOne({ _id: new ObjectId(idRegistry) });
+    if (!registry) {
+      return res.sendStatus(404);
+    }
+    await db
+      .collection("registries")
+      .deleteOne({ _id: new ObjectId(idRegistry) });
+    res.sendStatus(200);
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+export { createRegistry, getRegistries, deleteRegistry };
