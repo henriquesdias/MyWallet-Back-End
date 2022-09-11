@@ -25,7 +25,7 @@ async function signUp(req, res) {
   try {
     const users = await db.collection("users").findOne({ email });
     if (users) {
-      return res.sendStatus(409);
+      return res.status(409).send("E-mail já está em uso");
     }
     await db
       .collection("users")

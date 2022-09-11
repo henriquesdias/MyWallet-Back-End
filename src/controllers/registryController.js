@@ -61,7 +61,7 @@ async function getRegistries(req, res) {
       .toArray();
     res.send(registries);
   } catch (error) {
-    res.status(500).send(error, message);
+    res.status(500).send(error.message);
   }
 }
 async function deleteRegistry(req, res) {
@@ -81,4 +81,25 @@ async function deleteRegistry(req, res) {
     console.log(error.message);
   }
 }
-export { createRegistry, getRegistries, deleteRegistry };
+async function updateRegistry(req, res) {
+  const { value, description } = req.body;
+  const { idRegistry } = req.params;
+  try {
+    const registry = await db
+      .collection("registries")
+      .findOne({ _id: new ObjectId(idRegistry) });
+    if (!registry) {
+      return res.sendStatus(404);
+    }
+    await db
+      .collection("registries")
+      .updateOne(
+        { _id: new ObjectId(idRegistry) },
+        { $set: { value, description } }
+      );
+    res.sendStatus(201);
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+export { createRegistry, getRegistries, deleteRegistry, updateRegistry };
