@@ -1,28 +1,10 @@
 import db from "../database/mongo.js";
 import dayjs from "dayjs";
-import joi from "joi";
 import { ObjectId } from "mongodb";
-const registrySchema = joi.object({
-  value: joi.number().required(),
-  description: joi.string().required().trim(),
-  isOutput: joi.valid(true, false).required(),
-});
 
 async function createRegistry(req, res) {
   const token = res.locals.token;
-  const { value, description, isOutput } = req.body;
-  const validation = registrySchema.validate(
-    {
-      value,
-      description,
-      isOutput,
-    },
-    { abortEarly: false }
-  );
-  if (validation.error) {
-    const errors = validation.error.details.map((e) => e.message);
-    return res.status(422).send(errors);
-  }
+  const { value, description, isOutput } = res.locals.body;
   try {
     const session = await db.collection("sessions").findOne({ token });
     if (!session) {
