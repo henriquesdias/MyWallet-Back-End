@@ -1,10 +1,9 @@
+import "./setup.js";
 import express from "express";
 import cors from "cors";
-import userRoutes from "./src/Routes/userRoutes.js";
-import registryRoutes from "./src/Routes/registryRoutes.js";
-import sessionRoutes from "./src/Routes/sessionsRoutes.js";
-import dotenv from "dotenv";
-dotenv.config();
+import userRoutes from "./Routes/userRoutes.js";
+import registryRoutes from "./Routes/registryRoutes.js";
+import sessionRoutes from "./Routes/sessionsRoutes.js";
 
 const server = express();
 server.use(express.json());
