@@ -14,5 +14,5 @@ server.use(registryRoutes);
 server.use(sessionRoutes);
 
 server.listen(process.env.PORT, () =>
-  console.log(`Listening on port ${process.env.PORT}`)
+  console.log(`Listening on port   ${process.env.PORT}`)
 );
