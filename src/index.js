@@ -13,6 +13,10 @@ server.use(userRoutes);
 server.use(registryRoutes);
 server.use(sessionRoutes);
 
+server.get("/", (req, res) => {
+  res.send("beelezaaaaa");
+});
+
 server.listen(process.env.PORT, () =>
   console.log(`Listening on port ${process.env.PORT}`)
 );
