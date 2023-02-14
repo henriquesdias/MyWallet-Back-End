@@ -64,7 +64,7 @@ async function deleteRegistry(req, res) {
   }
 }
 async function updateRegistry(req, res) {
-  const { value, description } = req.body;
+  const { value, description } = res.locals.body;
   const { idRegistry } = req.params;
   try {
     const registry = await db
