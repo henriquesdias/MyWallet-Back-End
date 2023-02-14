@@ -1,8 +1,9 @@
+import { Router } from "express";
+
 import { deleteSession } from "../controllers/sessionsController.js";
 import { hasUser } from "../middlewares/verificationUser.js";
-import express from "express";
 
-const sessionRoutes = express.Router();
+const sessionRoutes = Router();
 
 sessionRoutes.delete("/session", hasUser, deleteSession);
 

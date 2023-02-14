@@ -1,4 +1,4 @@
-async function hasUser(req, res, next) {
+export async function hasUser(req, res, next) {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
   if (!token) {
@@ -7,4 +7,3 @@ async function hasUser(req, res, next) {
   res.locals.token = token;
   next();
 }
-export { hasUser };
