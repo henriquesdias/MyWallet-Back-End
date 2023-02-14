@@ -2,9 +2,9 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 
-import userRoutes from "./Routes/userRoutes.js";
-import registryRoutes from "./Routes/registryRoutes.js";
-import sessionRoutes from "./Routes/sessionsRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import registryRoutes from "./routes/registryRoutes.js";
+import sessionRoutes from "./routes/sessionsRoutes.js";
 
 dotenv.config();
 
