@@ -1,15 +1,20 @@
-import db from "../database/mongo.js";
+import {
+  findSession,
+  deleteTheSession,
+} from "../repositories/authRepository.js";
+
 async function deleteSession(req, res) {
   const token = res.locals.token.toString();
   try {
-    const session = await db.collection("sessions").findOne({ token });
+    const session = await findSession(token);
     if (!session) {
       return res.sendStatus(404);
     }
-    await db.collection("sessions").deleteOne({ token });
+    await deleteTheSession(token);
     res.sendStatus(200);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.sendStatus(500);
   }
 }
+
 export { deleteSession };

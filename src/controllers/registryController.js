@@ -1,22 +1,28 @@
-import db from "../database/mongo.js";
 import dayjs from "dayjs";
-import { ObjectId } from "mongodb";
+
+import { findSession, findUserById } from "../repositories/authRepository.js";
+import {
+  createNewRegistry,
+  getAllRegistries,
+  getRegistryById,
+  deleteTheRegistry,
+  updateTheRegistry,
+} from "../repositories/registryRepository.js";
 
 async function createRegistry(req, res) {
   const token = res.locals.token;
   const { value, description, isOutput } = res.locals.body;
   try {
-    const session = await db.collection("sessions").findOne({ token });
+    const session = await findSession(token);
     if (!session) {
       return res.sendStatus(401);
     }
-    const user = await db.collection("users").findOne({ _id: session.userId });
-    const registry = await db.collection("registries").insertOne({
+    const user = await findUserById(session.userId);
+    const registry = await createNewRegistry({
       user: user._id,
       value,
       description,
       isOutput,
-      date: dayjs().format("DD/MM"),
     });
     res.status(201).send({
       id: registry.insertedId,
@@ -26,21 +32,18 @@ async function createRegistry(req, res) {
       date: dayjs().format("DD/MM"),
     });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.sendStatus(500);
   }
 }
 async function getRegistries(req, res) {
   const token = res.locals.token;
   try {
-    const session = await db.collection("sessions").findOne({ token });
+    const session = await findSession(token);
     if (!session) {
       return res.sendStatus(401);
     }
-    const user = await db.collection("users").findOne({ _id: session.userId });
-    const registries = await db
-      .collection("registries")
-      .find({ user: user._id })
-      .toArray();
+    const user = await findUserById(session.userId);
+    const registries = await getAllRegistries(user._id);
     res.send(registries);
   } catch (error) {
     res.status(500).send(error.message);
@@ -49,39 +52,28 @@ async function getRegistries(req, res) {
 async function deleteRegistry(req, res) {
   const idRegistry = req.params.idRegistry;
   try {
-    const registry = await db
-      .collection("registries")
-      .findOne({ _id: new ObjectId(idRegistry) });
+    const registry = await getRegistryById(idRegistry);
     if (!registry) {
       return res.sendStatus(404);
     }
-    await db
-      .collection("registries")
-      .deleteOne({ _id: new ObjectId(idRegistry) });
+    await deleteTheRegistry(idRegistry);
     res.sendStatus(200);
   } catch (error) {
-    console.log(error.message);
+    res.sendStatus(500);
   }
 }
 async function updateRegistry(req, res) {
   const { value, description } = res.locals.body;
   const { idRegistry } = req.params;
   try {
-    const registry = await db
-      .collection("registries")
-      .findOne({ _id: new ObjectId(idRegistry) });
+    const registry = await getRegistryById(idRegistry);
     if (!registry) {
       return res.sendStatus(404);
     }
-    await db
-      .collection("registries")
-      .updateOne(
-        { _id: new ObjectId(idRegistry) },
-        { $set: { value, description } }
-      );
+    await updateTheRegistry({ idRegistry, value, description });
     res.sendStatus(201);
   } catch (error) {
-    console.log(error.message);
+    res.sendStatus(500);
   }
 }
 export { createRegistry, getRegistries, deleteRegistry, updateRegistry };
