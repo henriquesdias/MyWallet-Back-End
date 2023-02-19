@@ -58,3 +58,5 @@ mongod --dbpath ~/.mongo
 
 6. Finally access http://localhost:3000 on your browser. In this case my PORT variable value is 3000. <br />
 To a different value, acess `http://localhost:${PORT}`.
+
+7. Acess <a href="https://github.com/henriquesdias/MyWallet-Front-End" target="_blank">MyWallet Front-End</a> and configure front-end application, connecting the BASE_URL to `http://localhost:${PORT}`
