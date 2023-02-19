@@ -38,7 +38,7 @@ npm i
 ```bash
 mongod --dbpath ~/.mongo
 ```
-  If you don't have mongoDB installed, acess: [Link](https://mongodb.com)
+  If you don't have mongoDB installed, access: [Link](https://mongodb.com)
 
 4. Create a .env file e set up the following variables: 
 
